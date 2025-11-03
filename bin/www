@@ -12,7 +12,7 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || '8081');
 app.set('port', port);
 
 /**
@@ -87,4 +87,22 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+  
+  // Display startup information
+  console.log('');
+  console.log('='.repeat(60));
+  console.log('🚀 Server is running!');
+  console.log('='.repeat(60));
+  console.log('');
+  console.log('📍 Port:', addr.port);
+  console.log('🌐 API URL: http://localhost:' + addr.port);
+  
+  // Only show Swagger in local development
+  if (!process.env.WEBSITE_INSTANCE_ID && process.env.NODE_ENV !== 'production') {
+    console.log('📚 Swagger Documentation: http://localhost:' + addr.port + '/api-docs');
+  }
+  
+  console.log('');
+  console.log('='.repeat(60));
+  console.log('');
 }

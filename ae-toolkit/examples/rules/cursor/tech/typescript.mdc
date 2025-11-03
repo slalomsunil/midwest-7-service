@@ -1,0 +1,83 @@
+---
+description: TypeScript conventions and patterns for type-safe development
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+# TypeScript
+
+**Tool:** Cursor
+**Version:** 2025-01
+**Category:** Technology-Specific Rules
+**Related:** See `../../generic/tech/typescript.md` for detailed patterns, `../../copilot/tech/typescript.instructions.md` for Copilot version
+
+> This file follows Cursor's .mdc format and should be placed in `.cursor/rules/` directory. It auto-attaches when editing TypeScript files.
+
+## Type Safety
+
+Enable strict mode in tsconfig.json with strict: true, noUncheckedIndexedAccess: true, noImplicitReturns: true.
+
+Avoid `any`. Use `unknown` for truly unknown types, specific types or unions when possible.
+
+Let TypeScript infer types when obvious, but always explicitly type function parameters and return values.
+
+## Interfaces vs Types
+
+Use `interface` for object shapes that might be extended or implemented. Use `type` for unions, intersections, mapped types, and tuples.
+
+## Null Handling
+
+Handle null/undefined explicitly:
+```typescript
+function getUserName(user: User | null): string {
+  return user?.name ?? 'Guest';
+}
+```
+
+## Functions
+
+Always type parameters and return values:
+```typescript
+function calculateTotal(items: Item[], taxRate: number): number {
+  return items.reduce((sum, item) => sum + item.price, 0) * (1 + taxRate);
+}
+```
+
+Use generics for type-safe reusable functions:
+```typescript
+function first<T>(array: T[]): T | undefined {
+  return array[0];
+}
+```
+
+## Enums vs Union Types
+
+Prefer const objects or union types over enums:
+```typescript
+const Status = { Pending: 'pending', Active: 'active' } as const;
+type Status = typeof Status[keyof typeof Status];
+```
+
+## Async Patterns
+
+Prefer async/await over promise chains. Always type async functions with Promise return type.
+
+## Collections
+
+Use array methods (filter, map, reduce) over loops. Use spread operator for immutable updates.
+
+## Error Handling
+
+Create custom error classes. Handle errors with specific types in catch blocks.
+
+## Utility Types
+
+Use built-in utilities: Pick, Omit, Partial, Required, Readonly, Record, Extract, Exclude.
+
+## Module Organization
+
+Use named exports over default exports. Organize imports: external libraries first, then internal modules.
+
+## Naming
+
+PascalCase for classes/interfaces/types, camelCase for variables/functions, UPPER_SNAKE_CASE for constants.

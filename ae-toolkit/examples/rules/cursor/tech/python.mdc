@@ -1,0 +1,90 @@
+---
+description: Python conventions following PEP 8 and modern best practices
+globs: ["**/*.py"]
+alwaysApply: false
+---
+
+# Python
+
+**Tool:** Cursor
+**Version:** 2025-01
+**Category:** Technology-Specific Rules
+**Related:** See `../../generic/tech/python.md` for detailed patterns, `../../copilot/tech/python.instructions.md` for Copilot version
+
+> This file follows Cursor's .mdc format and should be placed in `.cursor/rules/` directory. It auto-attaches when editing Python files.
+
+## Style
+
+Follow PEP 8. Use Black for formatting (88 character line length).
+
+## Type Hints
+
+Add type hints to all function parameters and return values:
+```python
+def get_user(user_id: int) -> User | None:
+    return users.get(user_id)
+
+def process_items(items: list[str]) -> dict[str, int]:
+    return {item: len(item) for item in items}
+```
+
+Use modern syntax (Python 3.10+): `int | str` instead of `Union[int, str]`.
+
+## Null Handling
+
+Handle None explicitly. Use `T | None` for nullable types. Check for None before use.
+
+## Documentation
+
+Use docstrings for all public functions, classes, modules. Include Args, Returns, Raises, Examples.
+
+## Default Arguments
+
+Avoid mutable defaults. Use None and create new instances inside function:
+```python
+def add_item(item: str, items: list | None = None) -> list:
+    if items is None:
+        items = []
+    items.append(item)
+    return items
+```
+
+## Classes
+
+Use dataclasses for data containers. Use `@property` for computed attributes. Structure: `__init__`, public methods, private methods (prefixed with `_`).
+
+## Error Handling
+
+Use specific exception types. Create custom exceptions inheriting from Exception. Use context managers (`with`) for resources.
+
+## Comprehensions
+
+Use list comprehensions for simple transformations. Use generators for large datasets. Avoid overly complex comprehensions.
+
+## String Formatting
+
+Use f-strings for string formatting. Use `str.format()` for complex needs.
+
+## File Operations
+
+Use pathlib.Path instead of os.path. Use async file operations in async contexts.
+
+## Async Code
+
+Use `async`/`await` consistently. Use `asyncio.gather()` for concurrent operations.
+
+## Testing
+
+Test with pytest. Use fixtures for setup. Use parametrize for multiple cases. Use descriptive test names.
+
+## Environment
+
+Use virtual environments (venv). Use pyproject.toml for configuration.
+
+## Naming
+
+snake_case for functions/variables, PascalCase for classes, UPPER_SNAKE_CASE for constants.
+
+## Imports
+
+Order: standard library, third-party, local. Use absolute imports over relative.

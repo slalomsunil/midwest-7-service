@@ -1,0 +1,69 @@
+---
+description: Team collaboration patterns for code review and knowledge sharing
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Collaboration
+
+**Tool:** Cursor
+**Version:** 2025-01
+**Category:** Base Rules
+**Related:** See `../generic/collaboration.md` for generic version, `../copilot/` for GitHub Copilot version
+
+> This file follows Cursor's .mdc format and should be placed in `.cursor/rules/` directory in your project.
+
+## Code for Teams
+
+Generate code that communicates intent clearly for the next developer who will read it. Use meaningful names that reveal purpose.
+
+Structure generated code to highlight important logic. Extract complex expressions into well-named functions.
+
+Add comments for surprising or unintuitive code, but not for obvious operations.
+
+## Match Existing Patterns
+
+When generating code, match existing patterns in the project:
+- Follow the same code structure and organization
+- Use the same naming conventions
+- Follow the same error handling patterns
+- Align with established architectural decisions
+
+Don't introduce new patterns, libraries, or architectural approaches without discussion. Consistency with existing codebase is more valuable than introducing "better" patterns.
+
+## Reviewable Code
+
+Write code that is easy to review:
+- Keep changes focused and scoped
+- Ensure generated code works correctly before suggesting
+- Include appropriate tests
+
+## Team Documentation
+
+When generating documentation, write for the team:
+- Include architecture decisions and rationale
+- Document non-obvious dependencies or constraints
+- Explain workarounds and why they're necessary
+- Note future improvements or tech debt
+
+## Clarity Over Cleverness
+
+For shared code and APIs, prioritize clarity and maintainability over cleverness or brevity.
+
+When generating error handling code, provide error messages that include enough context for debugging.
+
+## References and Context
+
+In generated code comments, reference related documentation, issues, or discussions when adding workarounds or non-standard implementations.
+
+## Testable Code
+
+Generate code that is testable:
+- Avoid tight coupling to external services
+- Use dependency injection patterns
+- Keep functions pure when possible
+- Separate business logic from infrastructure concerns
+
+## Communication
+
+When suggesting code that affects multiple team members or system boundaries, add comments explaining the impact and considerations.

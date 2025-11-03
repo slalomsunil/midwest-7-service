@@ -1,0 +1,3 @@
+# Methodology Templates
+
+This folder contains well-defined, abstracted, file-based methodology templates that can be used for reference, or taken wholesale as a starting point for building software projects. The methodologies represented here should range in (maturity|robustness|breadth <- word choice is interesting). Basically, we need a basic methodology suitable for smaller projects/teams up through super robust methodologies meant to keep the AI focused when working in massive code bases (hopefully not massive because the AI was allowed to run rampant with implementation)

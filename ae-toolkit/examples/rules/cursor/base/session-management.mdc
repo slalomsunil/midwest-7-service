@@ -1,0 +1,111 @@
+---
+description: Planning and execution patterns for complex multi-step operations
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Session Management
+
+**Tool:** Cursor
+**Version:** 2025-01
+**Category:** Base Rules
+**Related:** See `../generic/session-management.md` for generic version, `../copilot/` for GitHub Copilot version
+
+> This file follows Cursor's .mdc format and should be placed in `.cursor/rules/` directory in your project.
+
+## Structure for Tracking
+
+When generating code for complex multi-step operations, structure it to enable clear progress tracking and error recovery.
+
+Break complex functions into smaller, well-named functions that represent logical steps in the process.
+
+## Progress Visibility
+
+Add clear logging or status updates at major checkpoints in generated workflows:
+
+```typescript
+logger.info('Starting data migration');
+const users = await loadUsers();
+logger.info(`Loaded ${users.length} users`);
+
+const transformed = transformUsers(users);
+logger.info('Transformation complete');
+
+await saveUsers(transformed);
+logger.info('Migration complete');
+```
+
+## Error Context
+
+Generate error handling that preserves context about which step failed:
+
+```typescript
+try {
+  await step1();
+  await step2();
+  await step3();
+} catch (error) {
+  logger.error('Failed during step2', { error, context });
+  throw error;
+}
+```
+
+## Recovery Support
+
+When generating code with multiple operations, structure it so partial progress can be recovered:
+
+```typescript
+// Good - can resume from checkpoint
+const processedIds = await loadCheckpoint();
+const remaining = items.filter(item => !processedIds.has(item.id));
+
+for (const item of remaining) {
+  await processItem(item);
+  await saveCheckpoint(item.id);
+}
+```
+
+## Function Granularity
+
+Don't generate long, monolithic functions that perform many unrelated operations. Break them into focused functions.
+
+## Dependency Clarity
+
+When generating async operations, make dependencies clear:
+
+```typescript
+// Clear that these must happen in sequence
+const user = await fetchUser(id);
+const posts = await fetchUserPosts(user.id);
+const comments = await fetchPostComments(posts.map(p => p.id));
+
+// Clear that these can happen in parallel
+const [user, settings, preferences] = await Promise.all([
+  fetchUser(id),
+  fetchSettings(id),
+  fetchPreferences(id)
+]);
+```
+
+## Prerequisites Validation
+
+Generate code that validates prerequisites before starting work:
+
+```typescript
+function processData(data: Data[]) {
+  if (!data || data.length === 0) {
+    throw new Error('No data to process');
+  }
+  // Continue with processing
+}
+```
+
+## Critical Ordering
+
+Add comments in generated code when the order of operations is critical but not obvious:
+
+```typescript
+// Must load config before initializing database connection
+await loadConfig();
+await initDatabase();
+```

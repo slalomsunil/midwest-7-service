@@ -1,0 +1,104 @@
+---
+description: Git and source control best practices for commits, branches, and PRs
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Source Control
+
+**Tool:** Cursor
+**Version:** 2025-01
+**Category:** Base Rules
+**Related:** See `../generic/source-control.md` for generic version, `../copilot/` for GitHub Copilot version
+
+> This file follows Cursor's .mdc format and should be placed in `.cursor/rules/` directory in your project.
+
+## Commit Messages
+
+Generate commit messages with this structure:
+- Brief summary line (under 72 characters) in imperative mood
+- Optional detailed explanation focusing on "why" not "what"
+- References to related issues
+
+Example:
+```
+Add user authentication middleware
+
+Verify JWT tokens on protected routes and extract user
+information to attach to request context.
+
+Fixes #123
+```
+
+Start commit summaries with imperative verbs: "Add feature" not "Added feature" or "Adds feature."
+
+In the commit body, explain why the change was made and include context not visible from the diff. Reference related issues or tickets.
+
+## Files to Never Commit
+
+Never suggest committing:
+- Secrets, API keys, credentials
+- `.env` files with sensitive data
+- Build artifacts and compiled code
+- Dependency directories (node_modules, vendor)
+- IDE files (.vscode, .idea) unless team-wide
+- OS files (.DS_Store, Thumbs.db)
+- Log files and temporary files
+
+## Branch Naming
+
+Suggest descriptive branch names:
+- `feature/user-authentication`
+- `fix/login-timeout`
+- `refactor/database-layer`
+- `docs/api-documentation`
+
+Avoid generic names like `temp`, `test`, or `new-branch`.
+
+## PR Descriptions
+
+When generating PR descriptions, include:
+- Summary of changes
+- Why changes were made
+- How to test the changes
+- Breaking changes or migration notes
+- Related issues
+
+Structure:
+```markdown
+## Summary
+Brief description of what this PR does
+
+## Changes
+- Key change 1
+- Key change 2
+
+## Testing
+- How to verify these changes
+
+## Breaking Changes
+List any breaking changes, or "None"
+
+## Related Issues
+Fixes #123
+```
+
+## Git Safety
+
+When generating code that uses Git APIs, include safety checks:
+- Verify clean working directory before operations
+- Check branch existence before operations
+- Validate state before destructive operations
+
+Never generate code that updates git config, runs destructive git commands (force push, hard reset) without explicit safety checks, or skips git hooks unless specifically required.
+
+## .gitignore
+
+In .gitignore suggestions, always include:
+- Dependencies (node_modules/, vendor/)
+- Build outputs (dist/, build/)
+- Environment files (.env, .env.local)
+- IDE files (.vscode/, .idea/)
+- OS files (.DS_Store, Thumbs.db)
+- Logs (*.log)
+- Test coverage (coverage/)

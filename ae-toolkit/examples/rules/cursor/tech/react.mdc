@@ -1,0 +1,81 @@
+---
+description: React component patterns and hooks best practices
+globs: ["**/*.tsx", "**/*.jsx"]
+alwaysApply: false
+---
+
+# React
+
+**Tool:** Cursor
+**Version:** 2025-01
+**Category:** Technology-Specific Rules
+**Related:** See `../../generic/tech/react.md` for detailed patterns, `../../copilot/tech/react.instructions.md` for Copilot version
+
+> This file follows Cursor's .mdc format and should be placed in `.cursor/rules/` directory. It auto-attaches when editing React files.
+
+## Components
+
+Use functional components with hooks. Avoid class components unless working with legacy code.
+
+Type all props explicitly:
+```typescript
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary';
+}
+
+export function Button({ label, onClick, variant = 'primary' }: ButtonProps) {
+  return <button onClick={onClick} className={variant}>{label}</button>;
+}
+```
+
+Type children as `React.ReactNode`. Type events properly: `React.FormEvent<HTMLFormElement>`, `React.ChangeEvent<HTMLInputElement>`.
+
+## Hooks
+
+Use `useState` with proper typing. Use functional updates when depending on previous state.
+
+Use `useEffect` with complete dependency arrays. Include all dependencies.
+
+Use `useCallback` for callbacks passed to children. Use `useMemo` only for truly expensive computations.
+
+Use `useRef` for DOM references and non-rendering mutable values.
+
+Extract reusable logic into custom hooks with names starting with `use`.
+
+## State Management
+
+Start with local state. Lift when needed by multiple components. Use Context for global state.
+
+## Performance
+
+Use React.memo only after measuring performance. Don't prematurely optimize.
+
+Use stable, unique keys for lists (item IDs, not indices).
+
+Use lazy loading and Suspense for route-level code splitting.
+
+## Forms
+
+For complex forms, use React Hook Form or similar libraries instead of manual state management.
+
+## Error Handling
+
+Use Error Boundaries to catch rendering errors in child components.
+
+## Testing
+
+Test with React Testing Library. Test behavior, not implementation details.
+
+## Organization
+
+One component per file. Structure as ComponentName/ComponentName.tsx with co-located tests and styles.
+
+Keep components focused. Extract complex logic into helper functions.
+
+## Props
+
+Use descriptive prop names. Avoid generic names like `data` or `props`.
+
+Prefer composition over prop drilling.

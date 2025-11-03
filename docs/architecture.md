@@ -53,6 +53,10 @@ Express.js web service following standard MVC patterns with conventional Node.js
 - **Current Development**: Azure integration work in progress on feature/azure-integration branch
 - **Future Considerations**: AI development enhancements for productivity and code consistency
 
+### Data Storage
+- **In-Memory Database**: Levarage an in-memory database to store and retrieve all application data
+
+
 ## Key Constraints for AI Development
 
 ### Preserve Existing Patterns

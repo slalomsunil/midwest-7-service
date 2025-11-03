@@ -1,10 +1,19 @@
 var path = require('path');
+var fs = require('fs');
 var Database = require('better-sqlite3');
 
 // Use Azure persistent storage if available, fallback to local
-var dbPath = process.env.WEBSITE_INSTANCE_ID 
-  ? '/home/data/cache.db'
-  : path.join(__dirname, 'cache.db');
+var isAzure = process.env.WEBSITE_INSTANCE_ID !== undefined;
+var dbDir = isAzure ? '/home/data' : __dirname;
+var dbPath = path.join(dbDir, 'cache.db');
+
+// Create directory if it doesn't exist
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+  console.log('Created database directory:', dbDir);
+}
+
+console.log('Initializing database at:', dbPath);
 
 var db = new Database(dbPath);
 
@@ -32,6 +41,6 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
 `);
 
-console.log('Database initialized at:', dbPath);
+console.log('Database initialized successfully at:', dbPath);
 
 module.exports = db;

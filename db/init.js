@@ -15,7 +15,14 @@ if (!fs.existsSync(dbDir)) {
 
 console.log('Initializing database at:', dbPath);
 
-var db = new Database(dbPath);
+var db = new Database(dbPath, {
+  verbose: process.env.NODE_ENV === 'development' ? console.log : undefined
+});
+
+// Set pragmas for better concurrency handling
+db.pragma('journal_mode = WAL');
+db.pragma('busy_timeout = 5000');
+db.pragma('synchronous = NORMAL');
 
 // Initialize tables
 db.exec(`

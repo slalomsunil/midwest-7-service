@@ -122,8 +122,7 @@ router.post('/', function(req, res, next) {
     if (!username) {
       return res.status(400).json({ error: 'Username is required' });
     }
-    var userId = usersDb.create(username, displayName, bio, profileImage);
-    var user = usersDb.findById(userId);
+    var user = usersDb.create(username, displayName, bio, profileImage);
     res.status(201).json(user);
   } catch (err) {
     if (err.message.includes('UNIQUE constraint failed')) {

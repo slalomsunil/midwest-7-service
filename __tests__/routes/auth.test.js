@@ -4,8 +4,26 @@ const usersDb = require('../../db/users');
 
 describe('Auth Routes', () => {
   beforeEach(() => {
-    // Clear the users database before each test
-    usersDb.clear();
+    // Clear the users database before each test - match users.test.js cleanup
+    const db = require('../../db/init');
+    
+    try {
+      // Use transaction for atomic cleanup
+      const transaction = db.transaction(() => {
+        db.prepare('DELETE FROM users').run();
+        db.prepare("DELETE FROM sqlite_sequence WHERE name = 'users'").run();
+      });
+      
+      transaction();
+      
+      // Verify table is empty
+      const count = db.prepare('SELECT COUNT(*) as count FROM users').get();
+      if (count.count !== 0) {
+        throw new Error('Failed to clear users table properly. Found ' + count.count + ' users');
+      }
+    } catch (err) {
+      throw err;
+    }
   });
 
   describe('POST /api/auth/login', () => {

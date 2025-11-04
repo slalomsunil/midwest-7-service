@@ -107,7 +107,7 @@ if (!process.env.WEBSITE_INSTANCE_ID && process.env.NODE_ENV !== 'production') {
 }
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/api/users', usersRouter);
 app.use('/api/hello', helloRouter);
 app.use('/api/auth', authRouter);
 app.use('/health', healthRouter);

@@ -15,12 +15,10 @@ describe('Users Database Operations', function() {
 
   describe('create', function() {
     it('should create a user with all fields', function() {
-      var userId = usersDb.create('testuser', 'Test User', 'Test bio', 'test.jpg');
+      var user = usersDb.create('testuser', 'Test User', 'Test bio', 'test.jpg');
       
-      expect(userId).toBeDefined();
-      expect(typeof userId).toBe('number');
-      
-      var user = usersDb.findById(userId);
+      expect(user).toBeDefined();
+      expect(typeof user.id).toBe('number');
       expect(user.username).toBe('testuser');
       expect(user.display_name).toBe('Test User');
       expect(user.bio).toBe('Test bio');
@@ -28,11 +26,10 @@ describe('Users Database Operations', function() {
     });
 
     it('should create a user with minimal fields', function() {
-      var userId = usersDb.create('minimaluser', null, null, null);
+      var user = usersDb.create('minimaluser', null, null, null);
       
-      expect(userId).toBeDefined();
-      
-      var user = usersDb.findById(userId);
+      expect(user).toBeDefined();
+      expect(typeof user.id).toBe('number');
       expect(user.username).toBe('minimaluser');
       expect(user.display_name).toBeNull();
       expect(user.bio).toBeNull();
@@ -50,12 +47,12 @@ describe('Users Database Operations', function() {
 
   describe('findById', function() {
     it('should find a user by id', function() {
-      var userId = usersDb.create('findme', 'Find Me', 'My bio', 'my.jpg');
+      var createdUser = usersDb.create('findme', 'Find Me', 'My bio', 'my.jpg');
       
-      var user = usersDb.findById(userId);
+      var user = usersDb.findById(createdUser.id);
       
       expect(user).toBeDefined();
-      expect(user.id).toBe(userId);
+      expect(user.id).toBe(createdUser.id);
       expect(user.username).toBe('findme');
     });
 
@@ -116,45 +113,45 @@ describe('Users Database Operations', function() {
 
   describe('update', function() {
     it('should update display name only', function() {
-      var userId = usersDb.create('updateuser', 'Original Name', 'Original Bio', 'original.jpg');
+      var createdUser = usersDb.create('updateuser', 'Original Name', 'Original Bio', 'original.jpg');
       
-      var result = usersDb.update(userId, { displayName: 'New Name' });
+      var result = usersDb.update(createdUser.id, { displayName: 'New Name' });
       
       expect(result).toBe(true);
       
-      var user = usersDb.findById(userId);
+      var user = usersDb.findById(createdUser.id);
       expect(user.display_name).toBe('New Name');
       expect(user.bio).toBe('Original Bio');
       expect(user.profile_image).toBe('original.jpg');
     });
 
     it('should update bio only', function() {
-      var userId = usersDb.create('updateuser', 'Name', 'Original Bio', 'image.jpg');
+      var createdUser = usersDb.create('updateuser', 'Name', 'Original Bio', 'image.jpg');
       
-      var result = usersDb.update(userId, { bio: 'Updated Bio' });
+      var result = usersDb.update(createdUser.id, { bio: 'Updated Bio' });
       
       expect(result).toBe(true);
       
-      var user = usersDb.findById(userId);
+      var user = usersDb.findById(createdUser.id);
       expect(user.bio).toBe('Updated Bio');
       expect(user.display_name).toBe('Name');
     });
 
     it('should update profile image only', function() {
-      var userId = usersDb.create('updateuser', 'Name', 'Bio', 'original.jpg');
+      var createdUser = usersDb.create('updateuser', 'Name', 'Bio', 'original.jpg');
       
-      var result = usersDb.update(userId, { profileImage: 'new.jpg' });
+      var result = usersDb.update(createdUser.id, { profileImage: 'new.jpg' });
       
       expect(result).toBe(true);
       
-      var user = usersDb.findById(userId);
+      var user = usersDb.findById(createdUser.id);
       expect(user.profile_image).toBe('new.jpg');
     });
 
     it('should update multiple fields', function() {
-      var userId = usersDb.create('updateuser', 'Original', 'Original Bio', 'original.jpg');
+      var createdUser = usersDb.create('updateuser', 'Original', 'Original Bio', 'original.jpg');
       
-      var result = usersDb.update(userId, {
+      var result = usersDb.update(createdUser.id, {
         displayName: 'New Name',
         bio: 'New Bio',
         profileImage: 'new.jpg'
@@ -162,16 +159,16 @@ describe('Users Database Operations', function() {
       
       expect(result).toBe(true);
       
-      var user = usersDb.findById(userId);
+      var user = usersDb.findById(createdUser.id);
       expect(user.display_name).toBe('New Name');
       expect(user.bio).toBe('New Bio');
       expect(user.profile_image).toBe('new.jpg');
     });
 
     it('should return false when no fields to update', function() {
-      var userId = usersDb.create('updateuser', 'Name', 'Bio', 'image.jpg');
+      var createdUser = usersDb.create('updateuser', 'Name', 'Bio', 'image.jpg');
       
-      var result = usersDb.update(userId, {});
+      var result = usersDb.update(createdUser.id, {});
       
       expect(result).toBe(false);
     });

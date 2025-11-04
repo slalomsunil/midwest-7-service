@@ -4,17 +4,35 @@ var usersDb = require('../../db/users');
 
 describe('User API Routes', function() {
   
-  beforeEach(function() {
+  beforeEach(function(done) {
     // Clear all users and reset auto-increment before each test
     var db = require('../../db/init');
-    db.prepare('DELETE FROM users').run();
-    db.prepare("DELETE FROM sqlite_sequence WHERE name = 'users'").run();
+    
+    try {
+      // Use transaction for atomic cleanup
+      var transaction = db.transaction(() => {
+        db.prepare('DELETE FROM users').run();
+        db.prepare("DELETE FROM sqlite_sequence WHERE name = 'users'").run();
+      });
+      
+      transaction();
+      
+      // Verify table is empty
+      var count = db.prepare('SELECT COUNT(*) as count FROM users').get();
+      if (count.count !== 0) {
+        throw new Error('Failed to clear users table properly. Found ' + count.count + ' users');
+      }
+      
+      done();
+    } catch (err) {
+      done(err);
+    }
   });
 
   describe('GET /users', function() {
     it('should return empty array when no users exist', function(done) {
       request(app)
-        .get('/users')
+        .get('/api/users')
         .expect('Content-Type', /json/)
         .expect(200)
         .end(function(err, res) {
@@ -31,7 +49,7 @@ describe('User API Routes', function() {
       usersDb.create('testuser2', 'Test User 2', 'Bio 2', 'image2.jpg');
 
       request(app)
-        .get('/users')
+        .get('/api/users')
         .expect('Content-Type', /json/)
         .expect(200)
         .end(function(err, res) {
@@ -49,10 +67,11 @@ describe('User API Routes', function() {
 
   describe('GET /users/:id', function() {
     it('should return a user by id', function(done) {
-      var userId = usersDb.create('testuser', 'Test User', 'Test Bio', 'test.jpg');
+      var user = usersDb.create('testuser', 'Test User', 'Test Bio', 'test.jpg');
+      var userId = user.id;
 
       request(app)
-        .get('/users/' + userId)
+        .get('/api/users/' + userId)
         .expect('Content-Type', /json/)
         .expect(200)
         .end(function(err, res) {
@@ -68,7 +87,7 @@ describe('User API Routes', function() {
 
     it('should return 404 for non-existent user', function(done) {
       request(app)
-        .get('/users/99999')
+        .get('/api/users/99999')
         .expect('Content-Type', /json/)
         .expect(404)
         .end(function(err, res) {
@@ -89,7 +108,7 @@ describe('User API Routes', function() {
       };
 
       request(app)
-        .post('/users')
+        .post('/api/users')
         .send(newUser)
         .expect('Content-Type', /json/)
         .expect(201)
@@ -110,7 +129,7 @@ describe('User API Routes', function() {
       };
 
       request(app)
-        .post('/users')
+        .post('/api/users')
         .send(newUser)
         .expect('Content-Type', /json/)
         .expect(201)
@@ -128,7 +147,7 @@ describe('User API Routes', function() {
       };
 
       request(app)
-        .post('/users')
+        .post('/api/users')
         .send(newUser)
         .expect('Content-Type', /json/)
         .expect(400)
@@ -148,7 +167,7 @@ describe('User API Routes', function() {
       };
 
       request(app)
-        .post('/users')
+        .post('/api/users')
         .send(newUser)
         .expect('Content-Type', /json/)
         .expect(409)
@@ -162,10 +181,11 @@ describe('User API Routes', function() {
 
   describe('PUT /users/:id', function() {
     it('should update user display name', function(done) {
-      var userId = usersDb.create('updateuser', 'Original Name', 'Original Bio', 'original.jpg');
+      var user = usersDb.create('updateuser', 'Original Name', 'Original Bio', 'original.jpg');
+      var userId = user.id;
 
       request(app)
-        .put('/users/' + userId)
+        .put('/api/users/' + userId)
         .send({ displayName: 'Updated Name' })
         .expect('Content-Type', /json/)
         .expect(200)
@@ -178,10 +198,11 @@ describe('User API Routes', function() {
     });
 
     it('should update multiple user fields', function(done) {
-      var userId = usersDb.create('updateuser', 'Original Name', 'Original Bio', 'original.jpg');
+      var user = usersDb.create('updateuser', 'Original Name', 'Original Bio', 'original.jpg');
+      var userId = user.id;
 
       request(app)
-        .put('/users/' + userId)
+        .put('/api/users/' + userId)
         .send({
           displayName: 'New Name',
           bio: 'New Bio',
@@ -200,7 +221,7 @@ describe('User API Routes', function() {
 
     it('should return 404 when updating non-existent user', function(done) {
       request(app)
-        .put('/users/99999')
+        .put('/api/users/99999')
         .send({ displayName: 'Updated Name' })
         .expect('Content-Type', /json/)
         .expect(404)
@@ -213,9 +234,10 @@ describe('User API Routes', function() {
   });
 
   afterAll(function() {
-    // Clean up test database
+    // Clean up test database but don't close the connection
+    // as it's shared across the application
     var db = require('../../db/init');
     db.prepare('DELETE FROM users').run();
-    db.close();
+    db.prepare("DELETE FROM sqlite_sequence WHERE name = 'users'").run();
   });
 });

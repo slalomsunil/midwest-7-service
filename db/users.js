@@ -4,7 +4,7 @@ var users = {
   create: function(username, displayName, bio, profileImage) {
     var stmt = db.prepare('INSERT INTO users (username, display_name, bio, profile_image, last_active) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)');
     var result = stmt.run(username, displayName, bio, profileImage);
-    var id = result.lastInsertRowid;
+    var id = Number(result.lastInsertRowid);
     return this.findById(id);
   },
 
@@ -44,7 +44,7 @@ var users = {
     
     values.push(id);
     var stmt = db.prepare('UPDATE users SET ' + updates.join(', ') + ' WHERE id = ?');
-    var result = stmt.run(values);
+    var result = stmt.run(...values);
     return result.changes > 0;
   },
 

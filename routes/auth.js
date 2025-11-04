@@ -51,8 +51,8 @@ router.post('/login', async (req, res) => {
       // Update last active timestamp for existing user
       user = usersDb.updateLastActive(user.id);
     } else {
-      // Create new user
-      user = usersDb.create(trimmedUsername);
+      // Create new user with just username
+      user = usersDb.create(trimmedUsername, null, null, null);
     }
 
     // Return user data (excluding any sensitive information)

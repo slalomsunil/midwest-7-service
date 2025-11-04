@@ -46,6 +46,28 @@ router.get('/', function(req, res, next) {
     });
   } catch (err) {
     console.error('Error in /api/hello:', err);
+    
+    // Map specific database errors to appropriate HTTP status codes
+    if (err.message && err.message.includes('SQLITE_BUSY')) {
+      return res.status(503).json({ 
+        error: 'Service temporarily unavailable',
+        retryAfter: 5
+      });
+    }
+    
+    if (err.message && err.message.includes('SQLITE_CORRUPT')) {
+      return res.status(500).json({ 
+        error: 'Failed to retrieve greeting'
+      });
+    }
+    
+    if (err.message && err.message.includes('SQLITE_CANTOPEN')) {
+      return res.status(500).json({ 
+        error: 'Failed to retrieve greeting'
+      });
+    }
+    
+    // Default error response
     res.status(500).json({ 
       error: 'Failed to retrieve greeting' 
     });

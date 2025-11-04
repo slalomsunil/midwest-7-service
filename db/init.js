@@ -25,7 +25,8 @@ db.exec(`
     display_name TEXT,
     bio TEXT,
     profile_image TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_active DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS posts (
@@ -40,6 +41,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
   CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
 `);
+
+// Add last_active column if it doesn't exist (migration)
+try {
+  db.exec('ALTER TABLE users ADD COLUMN last_active DATETIME DEFAULT CURRENT_TIMESTAMP');
+  console.log('Added last_active column to users table');
+} catch (error) {
+  if (error.code !== 'SQLITE_ERROR' || !error.message.includes('duplicate column')) {
+    console.error('Migration error:', error);
+  }
+  // Column already exists, continue
+}
 
 console.log('Database initialized successfully at:', dbPath);
 

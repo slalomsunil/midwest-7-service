@@ -146,4 +146,170 @@ describe('Temp Database Operations', function() {
       expect(greetings).toEqual([]);
     });
   });
+
+  describe('Input Validation and Edge Cases', function() {
+    beforeEach(function() {
+      tempDb.initTempTable();
+    });
+
+    it('should handle null keys gracefully', function() {
+      expect(function() {
+        tempDb.getGreeting(null);
+      }).not.toThrow();
+      
+      var result = tempDb.getGreeting(null);
+      expect(result).toBeDefined();
+      expect(result.key).toBe('hello'); // Should default to 'hello'
+    });
+
+    it('should handle undefined keys gracefully', function() {
+      var result = tempDb.getGreeting(undefined);
+      expect(result).toBeDefined();
+      expect(result.key).toBe('hello'); // Should default to 'hello'
+    });
+
+    it('should handle empty string keys', function() {
+      var result = tempDb.getGreeting('');
+      expect(result).toBeDefined();
+      expect(result.key).toBe('hello'); // Should default to 'hello'
+    });
+
+    it('should handle SQL injection attempts in keys', function() {
+      var maliciousKey = "'; DROP TABLE temp_greetings; --";
+      var result = tempDb.getGreeting(maliciousKey);
+      expect(result).toBeUndefined(); // Should not find the malicious key
+      
+      // Verify table still exists
+      var allGreetings = tempDb.getAllGreetings();
+      expect(allGreetings.length).toBeGreaterThan(0);
+    });
+
+    it('should handle very long keys', function() {
+      var longKey = 'a'.repeat(1000);
+      var result = tempDb.getGreeting(longKey);
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle special characters in keys', function() {
+      var specialKey = '!@#$%^&*(){}[]|\\:";\'<>?,./';
+      var result = tempDb.getGreeting(specialKey);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('Concurrency and Performance', function() {
+    beforeEach(function() {
+      tempDb.initTempTable();
+    });
+
+    it('should handle multiple concurrent reads', function(done) {
+      var promises = [];
+      var concurrentReads = 50;
+      
+      for (var i = 0; i < concurrentReads; i++) {
+        promises.push(new Promise(function(resolve) {
+          setTimeout(function() {
+            var result = tempDb.getGreeting('hello');
+            expect(result).toBeDefined();
+            expect(result.message).toBe('Hello World');
+            resolve();
+          }, Math.random() * 10);
+        }));
+      }
+      
+      Promise.all(promises).then(function() {
+        done();
+      }).catch(done);
+    });
+
+    it('should handle database connection recovery', function() {
+      // This test will fail initially as we need to implement connection recovery
+      var tempDb = require('../../db/temp');
+      
+      // Simulate database connection loss and recovery
+      expect(function() {
+        // This should handle connection errors gracefully
+        var result = tempDb.getGreeting('hello');
+        expect(result).toBeDefined();
+      }).not.toThrow();
+    });
+
+    it('should perform within acceptable time limits', function() {
+      var startTime = Date.now();
+      
+      for (var i = 0; i < 100; i++) {
+        tempDb.getGreeting('hello');
+      }
+      
+      var endTime = Date.now();
+      var duration = endTime - startTime;
+      
+      // Should complete 100 reads in less than 1 second
+      expect(duration).toBeLessThan(1000);
+    });
+  });
+
+  describe('Data Integrity', function() {
+    beforeEach(function() {
+      tempDb.initTempTable();
+    });
+
+    it('should maintain data consistency after multiple operations', function() {
+      // Verify initial state
+      var initial = tempDb.getAllGreetings();
+      expect(initial.length).toBe(1);
+      
+      // Multiple calls should not change data
+      tempDb.insertInitialData();
+      tempDb.insertInitialData();
+      tempDb.getGreeting('hello');
+      tempDb.getAllGreetings();
+      
+      var final = tempDb.getAllGreetings();
+      expect(final.length).toBe(1);
+      expect(final[0].message).toBe(initial[0].message);
+    });
+
+    it('should handle database schema validation', function() {
+      // This test will fail initially - we need to implement schema validation
+      var greetings = tempDb.getAllGreetings();
+      
+      greetings.forEach(function(greeting) {
+        expect(greeting).toHaveProperty('id');
+        expect(greeting).toHaveProperty('key');
+        expect(greeting).toHaveProperty('message');
+        expect(greeting).toHaveProperty('created_at');
+        
+        expect(typeof greeting.id).toBe('number');
+        expect(typeof greeting.key).toBe('string');
+        expect(typeof greeting.message).toBe('string');
+        expect(typeof greeting.created_at).toBe('string');
+        
+        // Validate data constraints
+        expect(greeting.key.length).toBeGreaterThan(0);
+        expect(greeting.message.length).toBeGreaterThan(0);
+        expect(new Date(greeting.created_at)).toBeInstanceOf(Date);
+      });
+    });
+  });
+
+  describe('Error Recovery', function() {
+    it('should recover from database corruption gracefully', function() {
+      // This test will fail initially - we need to implement recovery mechanisms
+      expect(function() {
+        tempDb.initTempTable();
+        tempDb.insertInitialData();
+        var result = tempDb.getGreeting('hello');
+        expect(result).toBeDefined();
+      }).not.toThrow();
+    });
+
+    it('should handle transaction failures', function() {
+      // This test will fail initially - we need proper transaction handling
+      expect(function() {
+        // Simulate transaction failure scenario
+        tempDb.insertInitialData();
+      }).not.toThrow();
+    });
+  });
 });

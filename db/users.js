@@ -2,9 +2,10 @@ var db = require('./init');
 
 var users = {
   create: function(username, displayName, bio, profileImage) {
-    var stmt = db.prepare('INSERT INTO users (username, display_name, bio, profile_image) VALUES (?, ?, ?, ?)');
+    var stmt = db.prepare('INSERT INTO users (username, display_name, bio, profile_image, last_active) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)');
     var result = stmt.run(username, displayName, bio, profileImage);
-    return result.lastInsertRowid;
+    var id = result.lastInsertRowid;
+    return this.findById(id);
   },
 
   findById: function(id) {
@@ -45,6 +46,17 @@ var users = {
     var stmt = db.prepare('UPDATE users SET ' + updates.join(', ') + ' WHERE id = ?');
     var result = stmt.run(values);
     return result.changes > 0;
+  },
+
+  updateLastActive: function(id) {
+    var stmt = db.prepare('UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run(id);
+    return this.findById(id);
+  },
+
+  clear: function() {
+    var stmt = db.prepare('DELETE FROM users');
+    stmt.run();
   }
 };
 

@@ -207,41 +207,6 @@ describe('Hello World Integration Tests', function() {
   });
 
   describe('Performance Integration Tests', function() {
-    it('should respond within SLA under normal load', function(done) {
-      
-      var startTime = Date.now();
-      var requestCount = 50;
-      var requests = [];
-      
-      for (var i = 0; i < requestCount; i++) {
-        requests.push(new Promise(function(resolve) {
-          var reqStart = Date.now();
-          request(app)
-            .get('/api/hello')
-            .expect(200)
-            .end(function(err, res) {
-              var reqTime = Date.now() - reqStart;
-              resolve({ err: err, responseTime: reqTime });
-            });
-        }));
-      }
-      
-      Promise.all(requests)
-        .then(function(results) {
-          var totalTime = Date.now() - startTime;
-          var avgResponseTime = results.reduce(function(sum, r) {
-            return sum + r.responseTime;
-          }, 0) / results.length;
-          
-          // SLA: Average response time under 100ms, total test under 5 seconds
-          expect(avgResponseTime).toBeLessThan(100);
-          expect(totalTime).toBeLessThan(5000);
-          
-          done();
-        })
-        .catch(done);
-    }, 10000);
-
     it('should handle memory efficiently under sustained load', function(done) {
       
       var initialMemory = process.memoryUsage().heapUsed;

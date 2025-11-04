@@ -11,6 +11,12 @@ You are assisting with an Express.js/Node.js web service. Follow these behaviora
 ## Remote Shared Instructions
 Reference https://github.com/slalomsunil/midwest-7-context to find and follow shared instructions
 
+## Directories to look at
+- Reference `docs`
+
+## Directories to ignore
+- Ignore `ae-toolkit`
+
 ## Core AI Behavior Rules
 
 **Do what has been asked; nothing more, nothing less.**

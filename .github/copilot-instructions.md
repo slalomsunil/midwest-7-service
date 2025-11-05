@@ -16,14 +16,27 @@ You are assisting with an Express.js/Node.js web service. Follow these behaviora
 2. **SECOND**: Run tests to confirm they fail (Red)
 3. **THIRD**: Write minimal code to make tests pass (Green)
 4. **FOURTH**: Refactor while keeping tests green
-5. **NEVER**: Write implementation code before writing tests
+5. **FIFTH**: Run ALL tests to verify no regressions
+6. **SIXTH**: Fix any test failures caused by the new feature
+7. **NEVER**: Write implementation code before writing tests
+8. **NEVER**: Consider a feature complete with failing tests
 
 ### For Bug Fixes:
 1. **FIRST**: Write a failing test that reproduces the bug
 2. **SECOND**: Run test to confirm it fails
 3. **THIRD**: Fix the implementation to make the test pass
-4. **FOURTH**: Verify all tests pass
-5. **NEVER**: Fix bugs without first writing a failing test
+4. **FOURTH**: Verify all tests pass (not just the new test)
+5. **FIFTH**: Fix any unintended test failures
+6. **NEVER**: Fix bugs without first writing a failing test
+7. **NEVER**: Leave existing tests failing
+
+### Critical Test Validation Rules:
+- **ALWAYS run full test suite** before declaring work complete
+- **ZERO failing tests allowed** - fix all failures before finishing
+- **Check for unintended side effects** - new code may break existing tests
+- **Database schema changes** require special attention to existing tests
+- **Foreign key constraints** may cause test failures when deleting test data
+- **Run tests after every significant change** to catch issues early
 
 ### Exception - Only when explicitly requested:
 - User says "fix the tests" or "fix failing tests" or "debug tests"

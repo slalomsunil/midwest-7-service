@@ -23,6 +23,7 @@ var db = new Database(dbPath, {
 db.pragma('journal_mode = WAL');
 db.pragma('busy_timeout = 5000');
 db.pragma('synchronous = NORMAL');
+db.pragma('foreign_keys = ON');
 
 // Initialize tables
 db.exec(`
@@ -56,8 +57,8 @@ db.exec(`
     transformed_message TEXT NOT NULL,
     chat_mode TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (sender_id) REFERENCES users(id),
-    FOREIGN KEY (receiver_id) REFERENCES users(id)
+    FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
   CREATE INDEX IF NOT EXISTS idx_chat_messages_users 

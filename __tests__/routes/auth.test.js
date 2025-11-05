@@ -183,12 +183,19 @@ describe('Auth Routes', () => {
   });
 
   describe('POST /api/auth/logout', () => {
-    it('should handle logout request', async () => {
+    it('should handle logout request with username', async () => {
       // Create user first
-      await request(app)
+      const loginResponse = await request(app)
         .post('/api/auth/login')
         .send({ username: 'logout_user' });
 
+      const userId = loginResponse.body.user.id;
+
+      // Verify user is online
+      let user = usersDb.findById(userId);
+      expect(user.is_online).toBe(1);
+
+      // Logout with username
       const response = await request(app)
         .post('/api/auth/logout')
         .send({ username: 'logout_user' })
@@ -198,6 +205,131 @@ describe('Auth Routes', () => {
         success: true,
         message: 'Logged out successfully'
       });
+
+      // Verify user is marked offline
+      user = usersDb.findById(userId);
+      expect(user.is_online).toBe(0);
+    });
+
+    it('should handle logout request with userId', async () => {
+      // Create user first
+      const loginResponse = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'logout_user2' });
+
+      const userId = loginResponse.body.user.id;
+
+      // Verify user is online
+      let user = usersDb.findById(userId);
+      expect(user.is_online).toBe(1);
+
+      // Logout with userId
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .send({ userId })
+        .expect(200);
+
+      expect(response.body).toEqual({
+        success: true,
+        message: 'Logged out successfully'
+      });
+
+      // Verify user is marked offline
+      user = usersDb.findById(userId);
+      expect(user.is_online).toBe(0);
+    });
+
+    it('should prefer userId over username when both provided', async () => {
+      // Create two users
+      const user1Response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user1' });
+
+      const user2Response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'user2' });
+
+      const userId1 = user1Response.body.user.id;
+      const userId2 = user2Response.body.user.id;
+
+      // Logout with userId1 but username of user2
+      await request(app)
+        .post('/api/auth/logout')
+        .send({ userId: userId1, username: 'user2' })
+        .expect(200);
+
+      // User1 should be offline (userId takes precedence)
+      let user1 = usersDb.findById(userId1);
+      expect(user1.is_online).toBe(0);
+
+      // User2 should still be online
+      let user2 = usersDb.findById(userId2);
+      expect(user2.is_online).toBe(1);
+    });
+
+    it('should handle logout with no user data gracefully', async () => {
+      // Should not crash even if no userId/username provided
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .send({})
+        .expect(200);
+
+      expect(response.body).toEqual({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    });
+
+    it('should handle logout for non-existent username', async () => {
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .send({ username: 'nonexistent_user' })
+        .expect(200);
+
+      expect(response.body).toEqual({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    });
+
+    it('should handle logout for non-existent userId', async () => {
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .send({ userId: 99999 })
+        .expect(200);
+
+      expect(response.body).toEqual({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    });
+
+    it('should remove user from online users list after logout', async () => {
+      // Login two users
+      const user1Response = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'online_user1' });
+
+      await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'online_user2' });
+
+      const userId1 = user1Response.body.user.id;
+
+      // Get online users - should be 2
+      let onlineUsers = usersDb.getActiveUsers();
+      expect(onlineUsers).toHaveLength(2);
+
+      // Logout user1
+      await request(app)
+        .post('/api/auth/logout')
+        .send({ userId: userId1 })
+        .expect(200);
+
+      // Get online users - should be 1
+      onlineUsers = usersDb.getActiveUsers();
+      expect(onlineUsers).toHaveLength(1);
+      expect(onlineUsers[0].username).toBe('online_user2');
     });
   });
 });

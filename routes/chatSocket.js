@@ -24,6 +24,35 @@ module.exports = function(io) {
       console.log('User joined:', userId);
     });
 
+    // Typing indicator - user started typing
+    socket.on('typing-start', function(data) {
+      var senderId = data.senderId;
+      var receiverId = data.receiverId;
+      
+      // Send to receiver
+      var receiverSocketId = connectedUsers.get(receiverId);
+      if (receiverSocketId) {
+        io.to('user-' + receiverId).emit('user-typing', { 
+          userId: senderId,
+          username: data.username 
+        });
+      }
+    });
+
+    // Typing indicator - user stopped typing
+    socket.on('typing-stop', function(data) {
+      var senderId = data.senderId;
+      var receiverId = data.receiverId;
+      
+      // Send to receiver
+      var receiverSocketId = connectedUsers.get(receiverId);
+      if (receiverSocketId) {
+        io.to('user-' + receiverId).emit('user-stopped-typing', { 
+          userId: senderId 
+        });
+      }
+    });
+
     // Send message
     socket.on('send-message', async function(data) {
       try {

@@ -9,6 +9,7 @@ var usersRouter = require('./routes/users');
 var helloRouter = require('./routes/hello');
 var healthRouter = require('./routes/health');
 var authRouter = require('./routes/auth');
+var chatRouter = require('./routes/chat');
 
 var app = express();
 
@@ -57,42 +58,28 @@ app.use(function(req, res, next) {
   var startTime = Date.now();
   
   // Store original res.end function
-  var originalEnd = res.end;
-  
-  // Override res.end to capture metrics
-  res.end = function(...args) {
-    var endTime = Date.now();
-    var responseTime = endTime - startTime;
-    
-    // Log metrics for monitoring
-    console.log('METRIC: api_request', {
-      endpoint: req.originalUrl || req.path,
-      method: req.method,
-      status_code: res.statusCode,
-      response_time: responseTime,
-      timestamp: new Date().toISOString(),
-      request_id: req.requestId,
-      correlation_id: req.correlationId
-    });
-    
-    // Track analytics if global function exists
-    if (typeof global.trackAnalytics === 'function') {
-      global.trackAnalytics('api_request', {
-        endpoint: req.originalUrl || req.path,
-        method: req.method,
-        success: res.statusCode < 400,
-        response_time: responseTime
-      });
-    }
-    
-    // Call original end function
-    originalEnd.apply(res, args);
-  };
+  // Metrics tracking disabled to reduce log noise
+  // var originalEnd = res.end;
+  // res.end = function(...args) {
+  //   var endTime = Date.now();
+  //   var responseTime = endTime - startTime;
+  //   // Track analytics if global function exists
+  //   if (typeof global.trackAnalytics === 'function') {
+  //     global.trackAnalytics('api_request', {
+  //       endpoint: req.originalUrl || req.path,
+  //       method: req.method,
+  //       success: res.statusCode < 400,
+  //       response_time: responseTime
+  //     });
+  //   }
+  //   originalEnd.apply(res, args);
+  // };
   
   next();
 });
 
-app.use(logger('dev'));
+// Morgan HTTP request logging disabled to reduce log noise
+// app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -110,6 +97,7 @@ app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/hello', helloRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/chat', chatRouter);
 app.use('/health', healthRouter);
 
 module.exports = app;

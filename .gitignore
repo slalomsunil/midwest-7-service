@@ -10,3 +10,4 @@ db/cache.db
 
 # Local data directory
 data/
+.env

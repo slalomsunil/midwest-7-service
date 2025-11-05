@@ -47,6 +47,21 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
   CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
+
+  CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    original_message TEXT NOT NULL,
+    transformed_message TEXT NOT NULL,
+    chat_mode TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id),
+    FOREIGN KEY (receiver_id) REFERENCES users(id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_chat_messages_users 
+  ON chat_messages(sender_id, receiver_id, created_at DESC);
 `);
 
 // Add last_active column if it doesn't exist (migration)

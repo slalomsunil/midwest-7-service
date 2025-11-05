@@ -60,6 +60,25 @@ try {
   // Column already exists, continue
 }
 
+// Add is_online column if it doesn't exist (migration for presence tracking)
+try {
+  db.exec('ALTER TABLE users ADD COLUMN is_online INTEGER DEFAULT 0');
+  console.log('Added is_online column to users table');
+} catch (error) {
+  if (error.code !== 'SQLITE_ERROR' || !error.message.includes('duplicate column')) {
+    console.error('Migration error:', error);
+  }
+  // Column already exists, continue
+}
+
+// Create index for querying online users efficiently
+try {
+  db.exec('CREATE INDEX IF NOT EXISTS idx_users_online ON users(is_online) WHERE is_online = 1');
+  console.log('Created index for online users');
+} catch (error) {
+  console.error('Index creation error:', error);
+}
+
 console.log('Database initialized successfully at:', dbPath);
 
 module.exports = db;

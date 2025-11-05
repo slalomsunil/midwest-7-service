@@ -56,6 +56,52 @@ Express.js web service following standard MVC patterns with conventional Node.js
 ### Data Storage
 - **In-Memory Database**: Levarage an in-memory database to store and retrieve all application data
 
+## API Endpoints
+
+### User Presence & Online Status
+
+**GET /api/users/online**
+
+Returns a list of currently online users, excluding the requesting user.
+
+**Query Parameters:**
+- `excludeUserId` (optional, integer): User ID to exclude from results (typically the current user)
+
+**Response:**
+```json
+{
+  "success": true,
+  "users": [
+    {
+      "id": 1,
+      "username": "alice",
+      "display_name": "Alice Smith",
+      "bio": "User bio",
+      "profile_image": "url",
+      "last_active": "2025-11-04T12:00:00Z"
+    }
+  ]
+}
+```
+
+**Headers:**
+- `Cache-Control: public, max-age=3` - Allows caching for 3 seconds to optimize polling
+
+**Implementation Notes:**
+- Uses database index on `is_online` column for efficient queries
+- Users are marked online/offline via auth endpoints (login/logout)
+- Designed for polling with recommended interval of 5 seconds
+- Automatic exponential backoff on client side for error handling
+
+### Authentication Flow
+
+**POST /api/auth/login**
+- Marks user as online (`is_online=1`) upon successful login
+- Updates `last_active` timestamp
+
+**POST /api/auth/logout** 
+- Marks user as offline (`is_online=0`)
+- Requires `userId` or `username` in request body
 
 ## Key Constraints for AI Development
 

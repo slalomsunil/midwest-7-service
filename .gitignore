@@ -6,6 +6,7 @@ db/cache.db
 *.db-journal
 *.db-shm
 *.db-wal
+.DS_Store
 
 # Local data directory
 data/

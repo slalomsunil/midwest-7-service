@@ -180,6 +180,108 @@ describe('Users Database Operations', function() {
     });
   });
 
+  describe('markUserOnline', function() {
+    it('should mark a user as online', function() {
+      var user = usersDb.create('onlineuser', 'Online User', null, null);
+      
+      var updatedUser = usersDb.markUserOnline(user.id);
+      
+      expect(updatedUser).toBeDefined();
+      expect(updatedUser.is_online).toBe(1);
+    });
+
+    it('should update last_active when marking online', function() {
+      var user = usersDb.create('activeuser', 'Active User', null, null);
+      var originalLastActive = user.last_active;
+      
+      // Wait a tiny bit to ensure timestamp changes
+      setTimeout(function() {}, 10);
+      
+      var updatedUser = usersDb.markUserOnline(user.id);
+      
+      expect(updatedUser.last_active).toBeDefined();
+    });
+  });
+
+  describe('markUserOffline', function() {
+    it('should mark a user as offline', function() {
+      var user = usersDb.create('offlineuser', 'Offline User', null, null);
+      usersDb.markUserOnline(user.id);
+      
+      var updatedUser = usersDb.markUserOffline(user.id);
+      
+      expect(updatedUser).toBeDefined();
+      expect(updatedUser.is_online).toBe(0);
+    });
+  });
+
+  describe('getActiveUsers', function() {
+    beforeEach(function() {
+      // Create multiple users with different online states
+      var user1 = usersDb.create('alice', 'Alice', null, null);
+      var user2 = usersDb.create('bob', 'Bob', null, null);
+      var user3 = usersDb.create('charlie', 'Charlie', null, null);
+      var user4 = usersDb.create('diana', 'Diana', null, null);
+      
+      // Mark some users as online
+      usersDb.markUserOnline(user1.id);
+      usersDb.markUserOnline(user2.id);
+      usersDb.markUserOnline(user3.id);
+      // user4 stays offline (is_online = 0)
+    });
+
+    it('should return all online users', function() {
+      var activeUsers = usersDb.getActiveUsers();
+      
+      expect(activeUsers).toBeDefined();
+      expect(activeUsers.length).toBe(3);
+      expect(activeUsers.map(u => u.username).sort()).toEqual(['alice', 'bob', 'charlie']);
+    });
+
+    it('should exclude specified user from results', function() {
+      var alice = usersDb.findByUsername('alice');
+      var activeUsers = usersDb.getActiveUsers({ excludeUserId: alice.id });
+      
+      expect(activeUsers.length).toBe(2);
+      expect(activeUsers.map(u => u.username).sort()).toEqual(['bob', 'charlie']);
+      expect(activeUsers.find(u => u.username === 'alice')).toBeUndefined();
+    });
+
+    it('should return empty array when no users are online', function() {
+      // Mark all users offline
+      var allUsers = usersDb.getAll();
+      allUsers.forEach(function(user) {
+        usersDb.markUserOffline(user.id);
+      });
+      
+      var activeUsers = usersDb.getActiveUsers();
+      
+      expect(activeUsers).toBeDefined();
+      expect(activeUsers.length).toBe(0);
+    });
+
+    it('should return empty array when only excluded user is online', function() {
+      // Mark all users offline except alice
+      var bob = usersDb.findByUsername('bob');
+      var charlie = usersDb.findByUsername('charlie');
+      usersDb.markUserOffline(bob.id);
+      usersDb.markUserOffline(charlie.id);
+      
+      var alice = usersDb.findByUsername('alice');
+      var activeUsers = usersDb.getActiveUsers({ excludeUserId: alice.id });
+      
+      expect(activeUsers.length).toBe(0);
+    });
+
+    it('should return users sorted alphabetically by username', function() {
+      var activeUsers = usersDb.getActiveUsers();
+      
+      expect(activeUsers[0].username).toBe('alice');
+      expect(activeUsers[1].username).toBe('bob');
+      expect(activeUsers[2].username).toBe('charlie');
+    });
+  });
+
   afterAll(function() {
     // Clean up
     db.prepare('DELETE FROM users').run();

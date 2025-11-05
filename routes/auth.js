@@ -48,11 +48,13 @@ router.post('/login', async (req, res) => {
     let user = usersDb.findByUsername(trimmedUsername);
 
     if (user) {
-      // Update last active timestamp for existing user
-      user = usersDb.updateLastActive(user.id);
+      // Update last active timestamp and mark user as online
+      user = usersDb.markUserOnline(user.id);
     } else {
       // Create new user with just username
       user = usersDb.create(trimmedUsername, null, null, null);
+      // Mark newly created user as online
+      user = usersDb.markUserOnline(user.id);
     }
 
     // Return user data (excluding any sensitive information)
@@ -83,14 +85,17 @@ router.post('/login', async (req, res) => {
  */
 router.post('/logout', async (req, res) => {
   try {
-    // In a username-only system, logout is mainly client-side
-    // We could update lastActive timestamp if needed
-    const { username } = req.body;
+    // Mark user as offline when they logout
+    const { username, userId } = req.body;
 
-    if (username) {
+    if (userId) {
+      // Prefer userId if provided
+      usersDb.markUserOffline(userId);
+    } else if (username) {
+      // Fall back to username lookup
       const user = usersDb.findByUsername(username);
       if (user) {
-        usersDb.updateLastActive(user.id);
+        usersDb.markUserOffline(user.id);
       }
     }
 

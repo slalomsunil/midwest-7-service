@@ -8,6 +8,29 @@
 
 You are assisting with an Express.js/Node.js web service. Follow these behavioral guidelines:
 
+## CRITICAL: Test-Driven Development (TDD) - ALWAYS REQUIRED
+**ALWAYS follow TDD unless the user explicitly asks to "fix tests" or "debug tests"**
+
+### For NEW Features:
+1. **FIRST**: Write failing tests that describe the expected behavior
+2. **SECOND**: Run tests to confirm they fail (Red)
+3. **THIRD**: Write minimal code to make tests pass (Green)
+4. **FOURTH**: Refactor while keeping tests green
+5. **NEVER**: Write implementation code before writing tests
+
+### For Bug Fixes:
+1. **FIRST**: Write a failing test that reproduces the bug
+2. **SECOND**: Run test to confirm it fails
+3. **THIRD**: Fix the implementation to make the test pass
+4. **FOURTH**: Verify all tests pass
+5. **NEVER**: Fix bugs without first writing a failing test
+
+### Exception - Only when explicitly requested:
+- User says "fix the tests" or "fix failing tests" or "debug tests"
+- In this case: Fix test code, mocking, or assertions as needed
+
+**If unclear whether it's a new feature or bug fix, ASK before proceeding. Default to TDD.**
+
 ## Remote Shared Instructions
 Reference https://github.com/slalomsunil/midwest-7-context to find and follow shared instructions
 

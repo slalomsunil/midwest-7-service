@@ -30,6 +30,73 @@ router.get('/', function(req, res, next) {
 
 /**
  * @swagger
+ * /users/online:
+ *   get:
+ *     summary: Get all currently online users
+ *     description: Retrieve a list of users who are currently logged in, excluding the requesting user
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: excludeUserId
+ *         schema:
+ *           type: integer
+ *         description: User ID to exclude from results (typically the current user)
+ *     responses:
+ *       200:
+ *         description: List of online users
+ *         headers:
+ *           Cache-Control:
+ *             description: Caching directives to optimize polling
+ *             schema:
+ *               type: string
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       username:
+ *                         type: string
+ *                       display_name:
+ *                         type: string
+ *                       profile_image:
+ *                         type: string
+ *                       last_active:
+ *                         type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/online', function(req, res, next) {
+  try {
+    var excludeUserId = req.query.excludeUserId ? parseInt(req.query.excludeUserId, 10) : null;
+    var users = usersDb.getActiveUsers({ excludeUserId: excludeUserId });
+    
+    // Set cache headers to optimize polling - allow caching for 3 seconds
+    res.set('Cache-Control', 'public, max-age=3');
+    
+    res.json({
+      success: true,
+      users: users
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * @swagger
  * /users/{id}:
  *   get:
  *     summary: Get a user by ID

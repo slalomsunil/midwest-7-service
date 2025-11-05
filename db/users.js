@@ -54,6 +54,36 @@ var users = {
     return this.findById(id);
   },
 
+  markUserOnline: function(id) {
+    var stmt = db.prepare('UPDATE users SET is_online = 1, last_active = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run(id);
+    return this.findById(id);
+  },
+
+  markUserOffline: function(id) {
+    var stmt = db.prepare('UPDATE users SET is_online = 0, last_active = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run(id);
+    return this.findById(id);
+  },
+
+  getActiveUsers: function(options) {
+    options = options || {};
+    var excludeUserId = options.excludeUserId;
+    
+    var query = 'SELECT id, username, display_name, bio, profile_image, last_active FROM users WHERE is_online = 1';
+    var params = [];
+    
+    if (excludeUserId) {
+      query += ' AND id != ?';
+      params.push(excludeUserId);
+    }
+    
+    query += ' ORDER BY username ASC';
+    
+    var stmt = db.prepare(query);
+    return stmt.all(...params);
+  },
+
   clear: function() {
     var stmt = db.prepare('DELETE FROM users');
     stmt.run();

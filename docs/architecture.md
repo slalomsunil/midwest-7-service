@@ -1,5 +1,27 @@
 # Architecture Overview
 
+## Architecture Documentation
+
+This document provides an overview of the system architecture. For detailed views at different levels, see:
+
+- **[C1 - System Context](./c1-system-context.md)** - High-level view of the system and external interactions
+- **[C2 - Container Diagram](./c2-container.md)** - Major containers and their relationships
+- **[C3 - Component Diagram](./c3-component.md)** - Internal components within containers
+- **[C4 - Code Diagram](./c4-code.md)** - Detailed code-level patterns
+
+### C4 Model Overview
+
+The C4 model provides a hierarchical way to visualize software architecture:
+
+1. **Level 1 - System Context**: Shows how the system fits into the world (users, external systems)
+2. **Level 2 - Containers**: Shows the high-level technical building blocks (apps, databases)
+3. **Level 3 - Components**: Shows how containers are made up of components
+4. **Level 4 - Code**: Shows how components are implemented (code patterns and structures)
+
+**Navigation**: Start with C1 for high-level understanding, then drill down to C2, C3, and C4 as needed for implementation details.
+
+---
+
 ## System Structure
 
 ### Application Type

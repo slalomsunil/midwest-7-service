@@ -11,6 +11,9 @@ var healthRouter = require('./routes/health');
 var authRouter = require('./routes/auth');
 var chatRouter = require('./routes/chat');
 
+// Import session service for startup cleanup
+var sessionService = require('./services/sessionService');
+
 var app = express();
 
 // CORS configuration for frontend communication
@@ -90,7 +93,6 @@ if (!process.env.WEBSITE_INSTANCE_ID && process.env.NODE_ENV !== 'production') {
   var swaggerUi = require('swagger-ui-express');
   var swaggerSpec = require('./config/swagger');
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  console.log('📚 Swagger documentation enabled');
 }
 
 app.use('/', indexRouter);
@@ -99,5 +101,19 @@ app.use('/api/hello', helloRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/chat', chatRouter);
 app.use('/health', healthRouter);
+
+// Session management - clear sessions on startup
+sessionService.clearAllSessions();
+
+// Graceful shutdown handling
+process.on('SIGTERM', function() {
+  sessionService.clearAllSessions();
+  process.exit(0);
+});
+
+process.on('SIGINT', function() {
+  sessionService.clearAllSessions();
+  process.exit(0);
+});
 
 module.exports = app;

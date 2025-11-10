@@ -1,16 +1,23 @@
 var db = require('../db/init');
 var messageTransformer = require('../services/messageTransformer');
+var sessionService = require('../services/sessionService');
 
-var connectedUsers = new Map(); // userId -> socket.id
+var connectedUsers = new Map(); // userId -> socket.id (legacy - gradually being replaced by sessionService)
 
 module.exports = function(io) {
   io.on('connection', function(socket) {
-    console.log('User connected:', socket.id);
 
     // User joins
     socket.on('user-join', function(data) {
       var userId = data.userId;
+      var username = data.username;
+      
+      // Legacy map for backward compatibility
       connectedUsers.set(userId, socket.id);
+      
+      // Add to session service
+      sessionService.addSession(userId, socket.id, username);
+      
       socket.userId = userId;
       socket.join('user-' + userId);
       
@@ -21,7 +28,8 @@ module.exports = function(io) {
       // Broadcast user online
       socket.broadcast.emit('user-online', { userId: userId });
       
-      console.log('User joined:', userId);
+      // Emit updated online users list
+      io.emit('online_users_updated', sessionService.getAllSessions());
     });
 
     // Typing indicator - user started typing
@@ -61,13 +69,6 @@ module.exports = function(io) {
         var originalMessage = data.message;
         var chatMode = data.mode;
 
-        console.log('📨 Message received from socket:', {
-          senderId,
-          receiverId,
-          mode: chatMode,
-          messagePreview: originalMessage.substring(0, 30)
-        });
-
         // Transform message
         var transformedMessage = await messageTransformer.transform(originalMessage, chatMode);
 
@@ -92,9 +93,6 @@ module.exports = function(io) {
         var receiverSocketId = connectedUsers.get(receiverId);
         if (receiverSocketId) {
           io.to('user-' + receiverId).emit('new-message', messageData);
-          console.log('📬 Message delivered to receiver:', receiverId, 'via socket:', receiverSocketId);
-        } else {
-          console.log('⚠️  Receiver not connected:', receiverId);
         }
 
         // Confirm to sender
@@ -103,9 +101,14 @@ module.exports = function(io) {
           status: 'sent',
           transformed: transformedMessage
         });
-        console.log('✅ Message confirmed to sender:', senderId);
 
-        console.log('Message sent from', senderId, 'to', receiverId, 'in', chatMode, 'mode');
+        // Emit notification event for message alerts
+        io.emit('message_notification', {
+          fromUserId: senderId.toString(),
+          toUserId: receiverId.toString(),
+          messagePreview: transformedMessage.substring(0, 50),
+          timestamp: Date.now()
+        });
       } catch (error) {
         console.error('Error sending message:', error);
         socket.emit('message-error', { error: error.message });
@@ -116,7 +119,11 @@ module.exports = function(io) {
     socket.on('disconnect', function() {
       var userId = socket.userId;
       if (userId) {
+        // Remove from legacy map
         connectedUsers.delete(userId);
+        
+        // Remove from session service
+        sessionService.removeSession(userId);
         
         // Update online status
         db.prepare('UPDATE users SET is_online = 0, last_active = CURRENT_TIMESTAMP WHERE id = ?')
@@ -128,7 +135,8 @@ module.exports = function(io) {
         // Broadcast user offline
         socket.broadcast.emit('user-offline', { userId: userId });
         
-        console.log('User disconnected:', userId);
+        // Emit updated online users list
+        io.emit('online_users_updated', sessionService.getAllSessions());
       }
     });
   });
@@ -159,8 +167,6 @@ function cleanupChats(userId) {
         WHERE (sender_id = ? AND receiver_id = ?) 
            OR (sender_id = ? AND receiver_id = ?)
       `).run(userId, partnerId, partnerId, userId);
-      
-      console.log('Cleaned up chat between', userId, 'and', partnerId);
     }
   });
 }

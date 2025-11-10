@@ -10,10 +10,7 @@ var dbPath = path.join(dbDir, 'cache.db');
 // Create directory if it doesn't exist
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
-  console.log('Created database directory:', dbDir);
 }
-
-console.log('Initializing database at:', dbPath);
 
 var db = new Database(dbPath, {
   verbose: process.env.NODE_ENV === 'development' ? console.log : undefined
@@ -68,7 +65,6 @@ db.exec(`
 // Add last_active column if it doesn't exist (migration)
 try {
   db.exec('ALTER TABLE users ADD COLUMN last_active DATETIME DEFAULT CURRENT_TIMESTAMP');
-  console.log('Added last_active column to users table');
 } catch (error) {
   if (error.code !== 'SQLITE_ERROR' || !error.message.includes('duplicate column')) {
     console.error('Migration error:', error);
@@ -79,7 +75,6 @@ try {
 // Add is_online column if it doesn't exist (migration for presence tracking)
 try {
   db.exec('ALTER TABLE users ADD COLUMN is_online INTEGER DEFAULT 0');
-  console.log('Added is_online column to users table');
 } catch (error) {
   if (error.code !== 'SQLITE_ERROR' || !error.message.includes('duplicate column')) {
     console.error('Migration error:', error);
@@ -90,11 +85,8 @@ try {
 // Create index for querying online users efficiently
 try {
   db.exec('CREATE INDEX IF NOT EXISTS idx_users_online ON users(is_online) WHERE is_online = 1');
-  console.log('Created index for online users');
 } catch (error) {
   console.error('Index creation error:', error);
 }
-
-console.log('Database initialized successfully at:', dbPath);
 
 module.exports = db;

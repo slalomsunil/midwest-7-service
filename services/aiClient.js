@@ -17,13 +17,6 @@ var chatModePrompts = {
 async function transformMessage(message, chatMode) {
   var systemPrompt = chatModePrompts[chatMode] || chatModePrompts.pirate;
   
-  console.log('🤖 AI CALL INITIATING:', {
-    mode: chatMode,
-    messageLength: message.length,
-    messagePreview: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
-    timestamp: new Date().toISOString()
-  });
-  
   try {
     var url = aiConfig.endpoint + '/openai/deployments/' + aiConfig.deployment + 
               '/chat/completions?api-version=' + aiConfig.apiVersion;
@@ -56,15 +49,6 @@ async function transformMessage(message, chatMode) {
     var endTime = Date.now();
     var duration = endTime - startTime;
     var transformedMessage = response.data.choices[0].message.content.trim();
-    
-    console.log('✅ AI RESPONSE RECEIVED:', {
-      mode: chatMode,
-      originalMessage: message,
-      transformedMessage: transformedMessage,
-      duration: duration + 'ms',
-      tokensUsed: response.data.usage || 'N/A',
-      timestamp: new Date().toISOString()
-    });
 
     return transformedMessage;
   } catch (error) {
@@ -77,12 +61,6 @@ async function transformMessage(message, chatMode) {
     });
     
     var fallbackMessage = getFallbackMessage(message, chatMode);
-    
-    console.log('🔄 USING FALLBACK:', {
-      mode: chatMode,
-      fallbackMessage: fallbackMessage,
-      timestamp: new Date().toISOString()
-    });
     
     return fallbackMessage;
   }

@@ -17,7 +17,6 @@ function initTempTable() {
     var stmt = db.prepare('INSERT OR IGNORE INTO temp_greetings (key, message) VALUES (?, ?)');
     stmt.run('hello', 'Hello World');
     
-    console.log('Temp greetings table initialized successfully');
     return true;
   } catch (error) {
     console.error('Failed to initialize temp greetings table:', error);
